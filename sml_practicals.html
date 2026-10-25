@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SML Practicals Code</title>
+<style>
+:root{--bg:#fff;--fg:#1f2328;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f6f8fa;--bar-bg:#eef0f3;--accent:#2563eb}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1115;--fg:#e6e8eb;--muted:#9aa0a6;--border:#2a2e35;--code-bg:#161a20;--bar-bg:#1d222a;--accent:#60a5fa}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:860px;margin:0 auto;padding:40px 16px 80px}
+h1{font-size:1.6rem;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 32px}
+.block{margin:0 0 36px}
+h2{font-size:1.05rem;font-weight:600;margin:0 0 10px}
+.code{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--code-bg)}
+.bar{display:flex;justify-content:space-between;align-items:center;padding:6px 8px 6px 14px;background:var(--bar-bg);border-bottom:1px solid var(--border);font:12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--muted)}
+.copy{font:inherit;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--muted);background:transparent;border:1px solid transparent;border-radius:6px;padding:4px 10px;cursor:pointer}
+.copy:hover{color:var(--fg);border-color:var(--border)}
+.copy:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.copy.done{color:var(--accent)}
+pre{margin:0;padding:14px;overflow-x:auto}
+code{font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;tab-size:4;white-space:pre}
+</style>
+</head>
+<body>
+<main>
+  <h1>SML Practicals</h1>
+  <p class="sub">Statistical &amp; machine learning experiments, copy-ready.</p>
+<section class="block" id="s0">
+  <h2>Setup</h2>
+  <div class="code">
+    <div class="bar"><span>Run before anything</span><button class="copy" type="button" aria-label="Copy Setup">Copy</button></div>
+    <pre><code>py -m pip install numpy pandas matplotlib scikit-learn seaborn scipy statsmodels
+
+winget install --id Python.Python.3.13 -e; if ($?) { py -3.13 -m pip install numpy pandas matplotlib scikit-learn seaborn scipy statsmodels }
+
+If python not available it will install that
+
+Run this line before anything</code></pre>
+  </div>
+</section>
+<section class="block" id="s1">
+  <h2>Experiment 1: Exploratory Data Analysis (EDA)</h2>
+  <div class="code">
+    <div class="bar"><span>EDA.py</span><button class="copy" type="button" aria-label="Copy Experiment 1: Exploratory Data Analysis (EDA)">Copy</button></div>
+    <pre><code>##Exploratory Data Analysis (EDA) EXP1
+import pandas as pd
+import seaborn as sns
+# pyrefly: ignore[missing-import]
+import matplotlib.pyplot as plt
+df = pd.read_csv(&quot;most_runs_in_cricket.csv&quot;)
+# Display first 5 rows
+print(df.head())
+# Descriptive statistics
+print(df.describe())
+# Histograms
+df.hist(figsize=(10,6))
+plt.show()
+# Correlation Heatmap
+sns.heatmap(df.corr(numeric_only=True), annot=True, cmap=&quot;coolwarm&quot;)
+plt.show()</code></pre>
+  </div>
+</section>
+<section class="block" id="s2">
+  <h2>Experiment 2: Data Preprocessing</h2>
+  <div class="code">
+    <div class="bar"><span>Preprocessing.py</span><button class="copy" type="button" aria-label="Copy Experiment 2: Data Preprocessing">Copy</button></div>
+    <pre><code>##Data Preprocessing EXP2
+
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+# Load dataset
+df = pd.read_csv(&quot;exp2.csv&quot;)
+print(&quot;===== ORIGINAL DATA =====&quot;)
+print(df)
+print(&quot;\n===== MISSING VALUES =====&quot;)
+print(df.isnull().sum())
+# 1. Handle missing numeric values
+numeric_cols = [&quot;Age&quot;, &quot;Salary&quot;, &quot;Performance_Score&quot;]
+df[numeric_cols] = df[numeric_cols].fillna(df[numeric_cols].mean())
+# 2. Handle missing categorical values (Direct assignment avoids ChainedAssignmentError)
+df[&quot;Department&quot;] = df[&quot;Department&quot;].fillna(df[&quot;Department&quot;].mode()[0])
+print(&quot;\n===== AFTER HANDLING MISSING VALUES =====&quot;)
+print(df)
+# 3. Encoding (One-Hot)
+df = pd.get_dummies(df, columns=[&quot;Department&quot;], dtype=float)
+print(&quot;\n===== AFTER ENCODING =====&quot;)
+print(df)
+# 4. Scaling
+scaler = StandardScaler()
+df[numeric_cols] = scaler.fit_transform(df[numeric_cols])
+print(&quot;\n===== AFTER SCALING =====&quot;)
+print(df)
+# 5. Outlier Detection
+Q1 = df[numeric_cols].quantile(0.25)
+Q3 = df[numeric_cols].quantile(0.75)
+IQR = Q3 - Q1
+outliers = (df[numeric_cols] &lt; (Q1 - 1.5 * IQR)) | (
+    df[numeric_cols] &gt; (Q3 + 1.5 * IQR)
+)
+print(&quot;\n===== OUTLIERS DETECTED =====&quot;)
+print(outliers)
+print(&quot;\n===== FINAL DATA INFO =====&quot;)
+print(df.info())</code></pre>
+  </div>
+</section>
+<section class="block" id="s3">
+  <h2>Experiment 3: Sampling Methods</h2>
+  <div class="code">
+    <div class="bar"><span>Sampling.py</span><button class="copy" type="button" aria-label="Copy Experiment 3: Sampling Methods">Copy</button></div>
+    <pre><code>##Experiment 3: Sampling Methods
+
+
+import pandas as pd
+# pyrefly: ignore[missing-import]
+import numpy as np
+from sklearn.model_selection import train_test_split
+# Load dataset
+df = pd.read_csv(&quot;student_data.csv&quot;)   # Replace with your dataset name
+# Display first few rows
+print(&quot;Original Dataset:&quot;)
+print(df.head())
+# ---------------------------------
+# 1. Simple Random Sampling (20%)
+# ---------------------------------
+srs_sample = df.sample(frac=0.2, random_state=42)
+print(&quot;\nSimple Random Sample:&quot;)
+print(srs_sample)
+# ---------------------------------
+# 2. Stratified Sampling
+# ---------------------------------
+train, stratified_sample = train_test_split(
+    df,
+    test_size=0.2,
+    stratify=df[&#x27;target&#x27;],
+    random_state=42
+)
+print(&quot;\nStratified Sample:&quot;)
+print(stratified_sample)
+# ---------------------------------
+# 3. Cluster Sampling
+# ---------------------------------
+clusters = df[&#x27;cluster_column&#x27;].unique()
+selected_cluster = np.random.choice(clusters)
+cluster_sample = df[df[&#x27;cluster_column&#x27;] == selected_cluster]
+print(&quot;\nSelected Cluster:&quot;, selected_cluster)
+print(cluster_sample)</code></pre>
+  </div>
+</section>
+<section class="block" id="s4">
+  <h2>Experiment 4: Central Limit Theorem</h2>
+  <div class="code">
+    <div class="bar"><span>CLT.py</span><button class="copy" type="button" aria-label="Copy Experiment 4: Central Limit Theorem">Copy</button></div>
+    <pre><code>##Experiment 4: Central Limit Theorem
+
+
+# Step 1: Import libraries
+import pandas as pd
+# pyrefly: ignore[missing-import]
+import numpy as np
+# pyrefly: ignore[missing-import]
+import matplotlib.pyplot as plt
+# Step 2: Load the dataset
+data = pd.read_csv(&quot;data.csv&quot;)
+# Step 3: Select the numerical column
+population = data[&quot;Marks&quot;]
+# Step 4: Sample sizes
+sample_sizes = [5, 10, 30, 50]
+
+
+# Step 5: Number of simulations
+num_samples = 1000
+# Step 6: Create plots
+plt.figure(figsize=(12, 8))
+# Step 7: Perform CLT simulation
+for i, n in enumerate(sample_sizes):
+    sample_means = []
+    for j in range(num_samples):
+        # Draw a random sample
+        sample = population.sample(n=n, replace=True)
+        # Compute sample mean
+        sample_means.append(sample.mean())
+    # Plot histogram
+    plt.subplot(2, 2, i + 1)
+    plt.hist(sample_means, bins=30, edgecolor=&#x27;black&#x27;)
+    plt.title(f&quot;Sample Size = {n}&quot;)
+    plt.xlabel(&quot;Sample Mean&quot;)
+    plt.ylabel(&quot;Frequency&quot;)
+plt.tight_layout()
+plt.show()</code></pre>
+  </div>
+</section>
+<section class="block" id="s5">
+  <h2>Experiment 5: Hypothesis Testing (t-Test, Chi-Square, ANOVA)</h2>
+  <div class="code">
+    <div class="bar"><span>Testing.py</span><button class="copy" type="button" aria-label="Copy Experiment 5: Hypothesis Testing (t-Test, Chi-Square, ANOVA)">Copy</button></div>
+    <pre><code>##Experiment 05 : Hypothesis Testing Using t-Test, Chi-Square Test and ANOVA
+
+
+import pandas as pd
+# pyrefly: ignore[missing-import]
+from scipy.stats import ttest_ind, chi2_contingency, f_oneway
+
+# Creating the dataset
+data = {
+    &quot;Gender&quot;: [
+        &quot;Male&quot;,&quot;Female&quot;,&quot;Male&quot;,&quot;Female&quot;,&quot;Male&quot;,&quot;Female&quot;,&quot;Male&quot;,&quot;Female&quot;,&quot;Male&quot;,&quot;Female&quot;,
+        &quot;Male&quot;,&quot;Female&quot;,&quot;Male&quot;,&quot;Female&quot;,&quot;Male&quot;,&quot;Female&quot;,&quot;Male&quot;,&quot;Female&quot;,&quot;Male&quot;,&quot;Female&quot;,
+        &quot;Male&quot;,&quot;Female&quot;,&quot;Male&quot;,&quot;Female&quot;,&quot;Male&quot;,&quot;Female&quot;,&quot;Male&quot;,&quot;Female&quot;,&quot;Male&quot;,&quot;Female&quot;
+    ],
+
+    &quot;Study_Method&quot;: [
+        &quot;Self-study&quot;,&quot;Self-study&quot;,&quot;Self-study&quot;,&quot;Self-study&quot;,&quot;Self-study&quot;,
+        &quot;Self-study&quot;,&quot;Self-study&quot;,&quot;Self-study&quot;,&quot;Self-study&quot;,&quot;Self-study&quot;,
+        &quot;Group Study&quot;,&quot;Group Study&quot;,&quot;Group Study&quot;,&quot;Group Study&quot;,&quot;Group Study&quot;,
+        &quot;Group Study&quot;,&quot;Group Study&quot;,&quot;Group Study&quot;,&quot;Group Study&quot;,&quot;Group Study&quot;,
+        &quot;Online Course&quot;,&quot;Online Course&quot;,&quot;Online Course&quot;,&quot;Online Course&quot;,&quot;Online Course&quot;,
+        &quot;Online Course&quot;,&quot;Online Course&quot;,&quot;Online Course&quot;,&quot;Online Course&quot;,&quot;Online Course&quot;
+    ],
+
+    &quot;Online_Class&quot;: [
+        &quot;Yes&quot;,&quot;Yes&quot;,&quot;No&quot;,&quot;Yes&quot;,&quot;No&quot;,&quot;Yes&quot;,&quot;No&quot;,&quot;Yes&quot;,&quot;No&quot;,&quot;Yes&quot;,
+        &quot;Yes&quot;,&quot;Yes&quot;,&quot;No&quot;,&quot;Yes&quot;,&quot;No&quot;,&quot;Yes&quot;,&quot;No&quot;,&quot;Yes&quot;,&quot;No&quot;,&quot;Yes&quot;,
+        &quot;Yes&quot;,&quot;Yes&quot;,&quot;Yes&quot;,&quot;Yes&quot;,&quot;No&quot;,&quot;Yes&quot;,&quot;Yes&quot;,&quot;Yes&quot;,&quot;No&quot;,&quot;Yes&quot;
+    ],
+
+    &quot;Marks&quot;: [
+        78,82,65,85,70,80,68,88,72,84,
+        76,79,73,81,69,77,71,83,75,80,
+        90,92,88,95,85,91,89,94,87,93
+    ]
+}
+
+df = pd.DataFrame(data)
+
+print(&quot;Dataset:&quot;)
+print(df)
+online = df[df[&quot;Online_Class&quot;] == &quot;Yes&quot;][&quot;Marks&quot;]
+offline = df[df[&quot;Online_Class&quot;] == &quot;No&quot;][&quot;Marks&quot;]
+
+t_stat, t_pvalue = ttest_ind(online, offline)
+
+print(&quot;\n--- Independent T-Test ---&quot;)
+print(&quot;Online class mean:&quot;, online.mean())
+print(&quot;No online class mean:&quot;, offline.mean())
+print(&quot;t-statistic:&quot;, t_stat)
+print(&quot;p-value:&quot;, t_pvalue)
+
+if t_pvalue &lt; 0.05:
+    print(&quot;Reject H0: There is a significant difference in marks.&quot;)
+else:
+    print(&quot;Fail to reject H0: There is no significant difference in marks.&quot;)
+
+contingency_table = pd.crosstab(df[&quot;Gender&quot;], df[&quot;Online_Class&quot;])
+
+chi2, p, dof, expected = chi2_contingency(contingency_table)
+
+print(&quot;\n--- Chi-Square Test ---&quot;)
+print(&quot;Contingency Table:&quot;)
+print(contingency_table)
+
+print(&quot;Chi-square statistic:&quot;, chi2)
+print(&quot;p-value:&quot;, p)
+
+if p &lt; 0.05:
+    print(&quot;Reject H0: Gender and online class participation are associated.&quot;)
+else:
+    print(&quot;Fail to reject H0: Gender and online class participation are independent.&quot;)
+
+self_study = df[df[&quot;Study_Method&quot;] == &quot;Self-study&quot;][&quot;Marks&quot;]
+group_study = df[df[&quot;Study_Method&quot;] == &quot;Group Study&quot;][&quot;Marks&quot;]
+online_course = df[df[&quot;Study_Method&quot;] == &quot;Online Course&quot;][&quot;Marks&quot;]
+
+f_stat, anova_pvalue = f_oneway(
+    self_study,
+    group_study,
+    online_course
+)
+
+print(&quot;\n--- One-Way ANOVA ---&quot;)
+print(&quot;Self-study mean:&quot;, self_study.mean())
+print(&quot;Group Study mean:&quot;, group_study.mean())
+print(&quot;Online Course mean:&quot;, online_course.mean())
+
+print(&quot;F-statistic:&quot;, f_stat)
+print(&quot;p-value:&quot;, anova_pvalue)
+
+if anova_pvalue &lt; 0.05:
+    print(&quot;Reject H0: At least one study method has a significantly different mean.&quot;)
+else:
+    print(&quot;Fail to reject H0: No significant difference among study methods.&quot;)</code></pre>
+  </div>
+</section>
+<section class="block" id="s6">
+  <h2>Experiment 6: Bootstrap &amp; Permutation Tests</h2>
+  <div class="code">
+    <div class="bar"><span>bootstrap &amp; permutation.py</span><button class="copy" type="button" aria-label="Copy Experiment 6: Bootstrap &amp; Permutation Tests">Copy</button></div>
+    <pre><code>##Experiment 6: Bootstrap &amp; Permutation Tests
+# pyrefly: ignore[missing-import]
+import numpy as np
+# pyrefly: ignore[missing-import]
+import matplotlib.pyplot as plt
+
+##1. Bootstrap Confidence Interval 
+# Reproducible results
+np.random.seed(42)
+
+# Observed sample data
+data = np.array([5, 6, 7, 7, 8, 9, 10, 6, 7, 8])
+
+# Original sample mean
+original_mean = np.mean(data)
+
+# Number of bootstrap resamples
+B = 10000
+
+# Generate bootstrap means
+bootstrap_means = []
+
+for _ in range(B):
+    bootstrap_sample = np.random.choice(
+        data,
+        size=len(data),
+        replace=True
+    )
+    bootstrap_means.append(np.mean(bootstrap_sample))
+
+bootstrap_means = np.array(bootstrap_means)
+
+# 95% percentile bootstrap confidence interval
+lower = np.percentile(bootstrap_means, 2.5)
+upper = np.percentile(bootstrap_means, 97.5)
+
+print(&quot;Original sample mean:&quot;, original_mean)
+print(&quot;95% Bootstrap Confidence Interval:&quot;)
+print(&quot;Lower limit:&quot;, lower)
+print(&quot;Upper limit:&quot;, upper)
+
+# Plot bootstrap distribution
+plt.hist(bootstrap_means, bins=30)
+plt.axvline(original_mean, linestyle=&quot;--&quot;, label=&quot;Original Mean&quot;)
+plt.axvline(lower, linestyle=&quot;--&quot;, label=&quot;Lower 2.5%&quot;)
+plt.axvline(upper, linestyle=&quot;--&quot;, label=&quot;Upper 97.5%&quot;)
+
+plt.xlabel(&quot;Bootstrap Mean&quot;)
+plt.ylabel(&quot;Frequency&quot;)
+plt.title(&quot;Bootstrap Distribution of the Mean&quot;)
+plt.legend()
+plt.show()
+
+
+##2. Permutation Test 
+
+np.random.seed(42)
+
+# Two independent groups
+group_A = np.array([60, 62, 65, 63, 61])
+group_B = np.array([70, 72, 68, 71, 69])
+
+# Observed difference in means
+observed_difference = np.mean(group_A) - np.mean(group_B)
+
+# Combine observations
+combined = np.concatenate([group_A, group_B])
+
+# Number of permutations
+B = 10000
+
+permutation_differences = []
+n_A = len(group_A)
+
+for _ in range(B):
+    shuffled = np.random.permutation(combined)
+    shuffled_A = shuffled[:n_A]
+    shuffled_B = shuffled[n_A:]
+
+    difference = np.mean(shuffled_A) - np.mean(shuffled_B)
+    permutation_differences.append(difference)
+
+permutation_differences = np.array(permutation_differences)
+
+# Two-sided permutation p-value
+p_value = np.mean(
+    np.abs(permutation_differences) &gt;= abs(observed_difference)
+)
+
+print(&quot;Observed difference in means:&quot;, observed_difference)
+print(&quot;Permutation p-value:&quot;, p_value)
+
+alpha = 0.05
+
+if p_value &lt; alpha:
+    print(&quot;Decision: Reject H0&quot;)
+    print(&quot;Conclusion: There is significant evidence of a difference between the group means.&quot;)
+else:
+    print(&quot;Decision: Do not reject H0&quot;)
+    print(&quot;Conclusion: There is not enough evidence of a difference between the group means.&quot;)
+
+# Plot null distribution
+plt.hist(permutation_differences, bins=30)
+
+plt.axvline(
+    observed_difference,
+    linestyle=&quot;--&quot;,
+    label=&quot;Observed Difference&quot;
+)
+
+plt.xlabel(&quot;Difference in Means&quot;)
+plt.ylabel(&quot;Frequency&quot;)
+plt.title(&quot;Permutation Null Distribution&quot;)
+plt.legend()
+plt.show()</code></pre>
+  </div>
+</section>
+<section class="block" id="s7">
+  <h2>Experiment 7: Maximum Likelihood Estimation (MLE)</h2>
+  <div class="code">
+    <div class="bar"><span>MLE.py</span><button class="copy" type="button" aria-label="Copy Experiment 7: Maximum Likelihood Estimation (MLE)">Copy</button></div>
+    <pre><code>##Experiment No . 07 = Maximum Likelihood Estimation (MLE)
+
+# pyrefly: ignore[missing-import]
+import numpy as np
+
+# Part 1: MLE for Normal Distribution
+
+normal_data = np.array([22, 25, 21, 27, 24, 26, 23, 28, 20, 24])
+
+print(&quot;Normal Distribution Dataset:&quot;)
+print(normal_data)
+
+# Calculate MLE of Mean
+mu_mle = np.mean(normal_data)
+
+# Calculate MLE of Variance
+variance_mle = np.mean((normal_data - mu_mle) ** 2)
+
+# Calculate MLE of Standard Deviation
+sigma_mle = np.sqrt(variance_mle)
+
+print(&quot;\nMLE Estimates for Normal Distribution:&quot;)
+print(&quot;Estimated Mean (mu) =&quot;, mu_mle)
+print(&quot;Estimated Variance (sigma^2) =&quot;, variance_mle)
+print(&quot;Estimated Standard Deviation (sigma) =&quot;, sigma_mle)
+
+# Part 2: MLE for Bernoulli Distribution
+
+bernoulli_data = np.array([1, 1, 0, 1, 0, 0, 1, 1, 0, 1])
+
+print(&quot;\nBernoulli Distribution Dataset:&quot;)
+print(bernoulli_data)
+
+# Calculate number of successes
+successes = np.sum(bernoulli_data)
+
+# Calculate total observations
+n = len(bernoulli_data)
+
+# MLE estimate of probability of success
+p_mle = successes / n
+
+print(&quot;\nMLE Estimate for Bernoulli Distribution:&quot;)
+print(&quot;Number of Successes =&quot;, successes)
+print(&quot;Total Observations =&quot;, n)
+print(&quot;Estimated Probability (p) =&quot;, p_mle)</code></pre>
+  </div>
+</section>
+<section class="block" id="s8">
+  <h2>Experiment 8: Linear Regression with Model Diagnostics</h2>
+  <div class="code">
+    <div class="bar"><span>linear regression.py</span><button class="copy" type="button" aria-label="Copy Experiment 8: Linear Regression with Model Diagnostics">Copy</button></div>
+    <pre><code># Experiment No. 08: Linear Regression with Model Diagnostics
+
+import pandas as pd
+# pyrefly: ignore[missing-import]
+import numpy as np
+# pyrefly: ignore[missing-import]
+import matplotlib.pyplot as plt
+import seaborn as sns
+# pyrefly: ignore[missing-import]
+import statsmodels.api as sm
+
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score, mean_squared_error
+# pyrefly: ignore[missing-import]
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+# 1. Create Car Sales Dataset
+data = {
+    &#x27;Engine_Size&#x27;: [1.2, 1.5, 1.8, 2.0, 1.4,
+                    2.2, 1.6, 2.5, 1.3, 1.9,
+                    2.1, 1.7, 2.4, 1.5, 2.8],
+
+    &#x27;Mileage&#x27;: [22, 20, 18, 16, 21,
+                14, 19, 12, 22, 17,
+                15, 18, 13, 20, 10],
+
+    &#x27;Age&#x27;: [2, 3, 2, 4, 1,
+            5, 3, 6, 2, 4,
+            5, 3, 6, 2, 8],
+
+    &#x27;Price&#x27;: [6.5, 8.0, 10.5, 12.0, 7.5,
+              14.0, 9.0, 16.5, 7.0, 11.0,
+              13.5, 9.5, 15.5, 8.5, 18.0]
+}
+
+df = pd.DataFrame(data)
+
+print(&quot;CAR SALES DATASET&quot;)
+print(df.to_string(index=False))
+
+# 2. Define Independent and Dependent Variables
+X = df[[&#x27;Engine_Size&#x27;, &#x27;Mileage&#x27;, &#x27;Age&#x27;]]
+y = df[&#x27;Price&#x27;]
+
+# 3. Fit Linear Regression Model
+model = LinearRegression()
+model.fit(X, y)
+
+y_pred = model.predict(X)
+
+print(&quot;\nLINEAR REGRESSION MODEL&quot;)
+print(&quot;Intercept:&quot;, model.intercept_)
+print(&quot;Coefficients:&quot;, model.coef_)
+
+# 4. Evaluate the Model
+r2 = r2_score(y, y_pred)
+mse = mean_squared_error(y, y_pred)
+rmse = np.sqrt(mse)
+
+print(&quot;\nMODEL EVALUATION&quot;)
+print(&quot;R2 Score:&quot;, r2)
+print(&quot;MSE:&quot;, mse)
+print(&quot;RMSE:&quot;, rmse)
+
+# 5. Calculate VIF
+X_vif = sm.add_constant(X)
+
+vif = pd.DataFrame()
+vif[&#x27;Variable&#x27;] = X_vif.columns
+vif[&#x27;VIF&#x27;] = [
+    variance_inflation_factor(X_vif.values, i)
+    for i in range(X_vif.shape[1])
+]
+
+print(&quot;\nVIF RESULTS&quot;)
+print(vif.to_string(index=False))
+
+# 6. Calculate Residuals
+residuals = y - y_pred
+
+diagnostics = pd.DataFrame({
+    &#x27;Actual&#x27;: y,
+    &#x27;Predicted&#x27;: y_pred,
+    &#x27;Residual&#x27;: residuals
+})
+
+print(&quot;\nRESIDUALS&quot;)
+print(diagnostics.round(3).to_string(index=False))
+
+# 7. Plot Residuals vs Fitted Values
+plt.figure(figsize=(8, 5))
+sns.scatterplot(x=y_pred, y=residuals)
+plt.axhline(y=0, color=&#x27;red&#x27;, linestyle=&#x27;--&#x27;)
+plt.xlabel(&quot;Fitted / Predicted Values&quot;)
+plt.ylabel(&quot;Residuals&quot;)
+plt.title(&quot;Residuals vs Fitted Values&quot;)
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+# 8. Fit OLS Model for Statistical Diagnostics
+X_sm = sm.add_constant(X)
+ols_model = sm.OLS(y, X_sm).fit()
+
+print(&quot;\nOLS REGRESSION SUMMARY&quot;)
+print(ols_model.summary())
+
+# 9. Calculate Cook&#x27;s Distance
+influence = ols_model.get_influence()
+cooks_distance = influence.cooks_distance[0]
+
+diagnostics[&#x27;Cook_Distance&#x27;] = cooks_distance
+
+print(&quot;\nCOOK&#x27;S DISTANCE&quot;)
+print(np.round(cooks_distance, 4))
+
+# 10. Plot Cook&#x27;s Distance
+plt.figure(figsize=(10, 5))
+plt.stem(
+    range(1, len(cooks_distance) + 1),
+    cooks_distance
+)
+plt.axhline(
+    y=4 / len(df),
+    color=&#x27;red&#x27;,
+    linestyle=&#x27;--&#x27;,
+    label=&#x27;Threshold = 4/n&#x27;
+)
+plt.xlabel(&quot;Observation Number&quot;)
+plt.ylabel(&quot;Cook&#x27;s Distance&quot;)
+plt.title(&quot;Cook&#x27;s Distance Plot&quot;)
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+# 11. Identify Influential Observations
+n = len(df)
+threshold = 4 / n
+
+diagnostics[&#x27;Influential&#x27;] = (
+    diagnostics[&#x27;Cook_Distance&#x27;] &gt; threshold
+)
+
+print(&quot;\nCOOK&#x27;S DISTANCE THRESHOLD:&quot;, round(threshold, 4))
+
+print(&quot;\nCOMPLETE DIAGNOSTIC RESULTS&quot;)
+print(diagnostics.round(4).to_string(index=True))
+
+print(&quot;\nINFLUENTIAL OBSERVATIONS&quot;)
+found = False
+
+for i in range(n):
+    if cooks_distance[i] &gt; threshold:
+        print(
+            &quot;Observation:&quot;, i + 1,
+            &quot;| Cook&#x27;s Distance:&quot;, round(cooks_distance[i], 4)
+        )
+        found = True
+
+if not found:
+    print(&quot;No observations exceed the screening threshold.&quot;)
+
+# 12. Conclusion
+print(&quot;\nCONCLUSION&quot;)
+print(&quot;Linear regression was performed successfully.&quot;)
+print(&quot;VIF, residual plots, and Cook&#x27;s distance were used&quot;)
+print(&quot;to evaluate multicollinearity, residual patterns,&quot;)
+print(&quot;and influential observations.&quot;)</code></pre>
+  </div>
+</section>
+</main>
+<script>
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var text = btn.closest('.code').querySelector('code').textContent;
+    function ok(){
+      btn.textContent = 'Copied'; btn.classList.add('done');
+      setTimeout(function(){ btn.textContent = 'Copy'; btn.classList.remove('done'); }, 1800);
+    }
+    function fallback(){
+      var t = document.createElement('textarea');
+      t.value = text; t.style.position = 'fixed'; t.style.opacity = '0';
+      document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); ok(); } catch(e) {}
+      document.body.removeChild(t);
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(ok, fallback);
+    } else { fallback(); }
+  });
+});
+</script>
+</body>
+</html>
